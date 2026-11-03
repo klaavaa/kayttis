@@ -35,7 +35,6 @@
     }
 
     .navigation button.active {
-      flex: 1;
       background: #187a58;
       color: white;
     }
@@ -78,7 +77,7 @@
     .product {
       display: flex;
       gap: 14px;
-      align-items: center;
+      align-items: flex-start;
     }
 
     .product img, .placeholder {
@@ -101,11 +100,28 @@
     .details p { margin: 5px 0 0; color: #52635e; }
     .expired { color: #a62929 !important; font-weight: 700; }
     .soon { color: #9b6300 !important; font-weight: 700; }
+    .opened { color: #187a58 !important; font-weight: 700; }
 
-    .delete {
+    .product-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .product-actions button {
       width: auto;
       margin: 0;
-      padding: 9px;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+    }
+
+    .secondary-button {
+      background: #e4eee9;
+      color: #18302b;
+    }
+
+    .delete {
       background: #eef2f0;
       color: #35443f;
       font-weight: 400;
@@ -236,11 +252,7 @@
           <input id="date" type="date" required />
 
           <label for="photo">Kuva (valinnainen)</label>
-          <input
-            id="photo"
-            type="file"
-            accept="image/*"
-          />
+          <input id="photo" type="file" accept="image/*" />
 
           <button type="submit">Lisää jääkaappiin</button>
         </form>
@@ -294,6 +306,18 @@
     }
 
     let products = loadProducts();
+
+    function localDateString(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDate(dateString) {
+      const [year, month, day] = dateString.split("-");
+      return `${day}.${month}.${year}`;
+    }
 
     function daysUntil(dateString) {
       const [year, month, day] = dateString.split("-").map(Number);
@@ -354,14 +378,7 @@
               throw new Error("Kuvan käsittely epäonnistui.");
             }
 
-            context.drawImage(
-              image,
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
-
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
             resolve(canvas.toDataURL("image/jpeg", 0.45));
           } catch (error) {
             reject(error);
@@ -396,6 +413,12 @@
       placeholder.setAttribute("aria-hidden", "true");
       placeholder.textContent = "🥫";
       return placeholder;
+    }
+
+    function saveProducts(updated) {
+      localStorage.setItem(storageKey, JSON.stringify(updated));
+      products = updated;
+      render();
     }
 
     function renderNotifications() {
@@ -444,7 +467,6 @@
           content,
           closeButton
         );
-
         notificationsElement.append(card);
       }
     }
@@ -490,6 +512,46 @@
 
         details.append(name, date);
 
+        if (product.openedAt) {
+          const opened = document.createElement("p");
+          opened.className = "opened";
+          opened.textContent = `✓ Avattu ${formatDate(product.openedAt)}`;
+          details.append(opened);
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "product-actions";
+
+        const openButton = document.createElement("button");
+        openButton.type = "button";
+        openButton.className = product.openedAt ? "secondary-button" : "";
+        openButton.textContent = product.openedAt
+          ? "Peru avaus"
+          : "Merkitse avatuksi";
+        openButton.setAttribute(
+          "aria-label",
+          product.openedAt
+            ? `Peru tuotteen ${product.name} avausmerkintä`
+            : `Merkitse ${product.name} avatuksi`
+        );
+
+        openButton.addEventListener("click", () => {
+          const updated = products.map(item =>
+            item.id === product.id
+              ? {
+                  ...item,
+                  openedAt: item.openedAt ? null : localDateString()
+                }
+              : item
+          );
+
+          try {
+            saveProducts(updated);
+          } catch (error) {
+            alert(`Avausmerkintää ei voitu tallentaa: ${error.message}`);
+          }
+        });
+
         const deleteButton = document.createElement("button");
         deleteButton.className = "delete";
         deleteButton.type = "button";
@@ -500,20 +562,16 @@
           const updated = products.filter(item => item.id !== product.id);
 
           try {
-            localStorage.setItem(storageKey, JSON.stringify(updated));
-            products = updated;
-            render();
+            saveProducts(updated);
           } catch (error) {
             alert(`Tuotetta ei voitu poistaa: ${error.message}`);
           }
         });
 
-        card.append(
-          createProductImage(product),
-          details,
-          deleteButton
-        );
+        actions.append(openButton, deleteButton);
+        details.append(actions);
 
+        card.append(createProductImage(product), details);
         productsElement.append(card);
       }
     }
@@ -534,15 +592,12 @@
           id: `tuote-${Date.now()}-${Math.random().toString(36).slice(2)}`,
           name: document.querySelector("#name").value.trim(),
           date: document.querySelector("#date").value,
-          photo: file ? await resizeImage(file) : null
+          photo: file ? await resizeImage(file) : null,
+          openedAt: null
         };
 
-        const updated = [...products, product];
-        localStorage.setItem(storageKey, JSON.stringify(updated));
-
-        products = updated;
+        saveProducts([...products, product]);
         form.reset();
-        render();
         showView("products");
       } catch (error) {
         if (error?.name === "QuotaExceededError") {

@@ -21,10 +21,7 @@
     h1 { margin-bottom: 4px; }
     h2 { font-size: 1.2rem; }
 
-    .intro,
-    .hint {
-      color: #52635e;
-    }
+    .intro, .hint { color: #52635e; }
 
     .navigation {
       display: flex;
@@ -44,12 +41,9 @@
       color: white;
     }
 
-    [hidden] {
-      display: none !important;
-    }
+    [hidden] { display: none !important; }
 
-    .panel,
-    .product {
+    .panel, .product {
       background: white;
       border-radius: 16px;
       padding: 18px;
@@ -63,8 +57,7 @@
       margin: 14px 0 6px;
     }
 
-    input,
-    button {
+    input, button {
       box-sizing: border-box;
       width: 100%;
       font: inherit;
@@ -72,9 +65,7 @@
       padding: 12px;
     }
 
-    input {
-      border: 1px solid #b7c9c1;
-    }
+    input { border: 1px solid #b7c9c1; }
 
     button {
       border: 0;
@@ -85,6 +76,11 @@
       margin-top: 16px;
     }
 
+    .example-button {
+      background: #e4eee9;
+      color: #18302b;
+    }
+
     .product {
       position: relative;
       display: flex;
@@ -93,9 +89,7 @@
       border-left: 7px solid transparent;
     }
 
-    .product.has-opened-badge {
-      padding-right: 86px;
-    }
+    .product.has-opened-badge { padding-right: 86px; }
 
     .product.expired-product {
       background: #ffd6d6;
@@ -107,8 +101,7 @@
       border-left-color: #df7600;
     }
 
-    .product > img,
-    .placeholder {
+    .product > img, .placeholder {
       width: 72px;
       height: 72px;
       flex: none;
@@ -123,19 +116,9 @@
       font-size: 2rem;
     }
 
-    .details {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .details strong {
-      overflow-wrap: anywhere;
-    }
-
-    .details p {
-      margin: 5px 0 0;
-      color: #52635e;
-    }
+    .details { flex: 1; min-width: 0; }
+    .details strong { overflow-wrap: anywhere; }
+    .details p { margin: 5px 0 0; color: #52635e; }
 
     .expired {
       color: #981e1e !important;
@@ -147,11 +130,8 @@
       font-weight: 700;
     }
 
-    .opened-date {
-      color: #35564a !important;
-    }
+    .opened-date { color: #35564a !important; }
 
-    /* Avatun tuotteen kuva kortin oikeassa yläkulmassa */
     .opened-badge {
       position: absolute;
       top: 14px;
@@ -227,15 +207,8 @@
     }
 
     @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .notification-image {
@@ -253,10 +226,7 @@
       font-size: 1.6rem;
     }
 
-    .notification-content {
-      flex: 1;
-      min-width: 0;
-    }
+    .notification-content { flex: 1; min-width: 0; }
 
     .notification-content strong {
       display: block;
@@ -286,9 +256,7 @@
       font-weight: 400;
     }
 
-    #notice {
-      font-weight: 600;
-    }
+    #notice { font-weight: 600; }
   </style>
 </head>
 
@@ -311,10 +279,7 @@
     >
       Tuotteet
     </button>
-
-    <button id="addButton" type="button">
-      Lisää tuote
-    </button>
+    <button id="addButton" type="button">Lisää tuote</button>
   </nav>
 
   <main>
@@ -327,19 +292,13 @@
     <section id="addView" hidden aria-labelledby="addHeading">
       <div class="panel">
         <h2 id="addHeading">Lisää tuote käsin</h2>
-
         <p class="hint">
           Tämä näkymä simuloi prototyypissä kameran tekemää tuotteen lisäystä.
         </p>
 
         <form id="productForm">
           <label for="name">Tuotteen nimi</label>
-          <input
-            id="name"
-            type="text"
-            placeholder="Esim. maito"
-            required
-          />
+          <input id="name" type="text" placeholder="Esim. maito" required />
 
           <label for="date">Päiväys</label>
           <input id="date" type="date" required />
@@ -349,6 +308,21 @@
 
           <button type="submit">Lisää jääkaappiin</button>
         </form>
+      </div>
+
+      <div class="panel">
+        <h2>Kokeile esimerkkituotteilla</h2>
+        <p class="hint">
+          Lisää viisi tuotetta, joilla on erilaisia päiväyksiä ja
+          avausmerkintöjä.
+        </p>
+        <button
+          id="addExamplesButton"
+          class="example-button"
+          type="button"
+        >
+          Lisää 5 esimerkkituotetta
+        </button>
       </div>
     </section>
   </main>
@@ -360,6 +334,7 @@
     const addView = document.querySelector("#addView");
     const productsButton = document.querySelector("#productsButton");
     const addButton = document.querySelector("#addButton");
+    const addExamplesButton = document.querySelector("#addExamplesButton");
     const form = document.querySelector("#productForm");
     const productsElement = document.querySelector("#products");
     const noticeElement = document.querySelector("#notice");
@@ -404,13 +379,55 @@
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const day = String(date.getDate()).padStart(2, "0");
-
       return `${year}-${month}-${day}`;
     }
 
-    function formatDate(dateString) {
-      const [year, month, day] = dateString.split("-");
-      return `${day}.${month}.${year}`;
+    // Negatiivinen luku tarkoittaa mennyttä päivää.
+    function dateWithOffset(offset) {
+      const date = new Date();
+      date.setHours(12, 0, 0, 0);
+      date.setDate(date.getDate() + offset);
+      return localDateString(date);
+    }
+
+    function exampleProducts() {
+      return [
+        {
+          id: "esimerkki-maito",
+          name: "Maito",
+          date: dateWithOffset(-2),
+          photo: null,
+          openedAt: dateWithOffset(-4)
+        },
+        {
+          id: "esimerkki-jogurtti",
+          name: "Jogurtti",
+          date: dateWithOffset(1),
+          photo: null,
+          openedAt: null
+        },
+        {
+          id: "esimerkki-juusto",
+          name: "Juusto",
+          date: dateWithOffset(3),
+          photo: null,
+          openedAt: dateWithOffset(-2)
+        },
+        {
+          id: "esimerkki-kurkkusalaatti",
+          name: "Kurkkusalaatti",
+          date: dateWithOffset(10),
+          photo: null,
+          openedAt: dateWithOffset(-1)
+        },
+        {
+          id: "esimerkki-kananmunat",
+          name: "Kananmunat",
+          date: dateWithOffset(14),
+          photo: null,
+          openedAt: null
+        }
+      ];
     }
 
     function daysUntil(dateString) {
@@ -422,17 +439,23 @@
         today.getMonth(),
         today.getDate()
       );
-
       const productUTC = Date.UTC(year, month - 1, day);
 
       return Math.round((productUTC - todayUTC) / 86400000);
+    }
+
+    function openedText(openedAt) {
+      const daysAgo = -daysUntil(openedAt);
+
+      if (daysAgo === 0) return "Avattu tänään";
+      if (daysAgo === 1) return "Avattu 1 päivä sitten";
+      return `Avattu ${daysAgo} päivää sitten`;
     }
 
     function statusText(days) {
       if (days < 0) return `Päiväys meni ${-days} pv sitten`;
       if (days === 0) return "Päiväys on tänään";
       if (days === 1) return "Päiväys on huomenna";
-
       return `Päiväykseen ${days} pv`;
     }
 
@@ -441,7 +464,6 @@
 
       if (days < 0) {
         const daysAgo = -days;
-
         return `Päiväys meni vanhaksi ${daysAgo} ${
           daysAgo === 1 ? "päivä" : "päivää"
         } sitten.`;
@@ -449,7 +471,6 @@
 
       if (days === 0) return "Päiväys on tänään.";
       if (days === 1) return "Päiväys on huomenna.";
-
       return `Päiväykseen on ${days} päivää.`;
     }
 
@@ -472,19 +493,11 @@
             canvas.height = Math.max(1, Math.round(image.height * scale));
 
             const context = canvas.getContext("2d");
-
             if (!context) {
               throw new Error("Kuvan käsittely epäonnistui.");
             }
 
-            context.drawImage(
-              image,
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
-
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
             resolve(canvas.toDataURL("image/jpeg", 0.45));
           } catch (error) {
             reject(error);
@@ -508,22 +521,16 @@
         image.src = product.photo;
         image.alt = `Kuva tuotteesta ${product.name}`;
 
-        if (forNotification) {
-          image.className = "notification-image";
-        }
-
+        if (forNotification) image.className = "notification-image";
         return image;
       }
 
       const placeholder = document.createElement("div");
-
       placeholder.className = forNotification
         ? "notification-image notification-placeholder"
         : "placeholder";
-
       placeholder.setAttribute("aria-hidden", "true");
       placeholder.textContent = "🥫";
-
       return placeholder;
     }
 
@@ -564,7 +571,6 @@
         closeButton.className = "notification-close";
         closeButton.type = "button";
         closeButton.textContent = "×";
-
         closeButton.setAttribute(
           "aria-label",
           `Sulje tuotteen ${product.name} ilmoitus`
@@ -609,7 +615,6 @@
 
       for (const product of sorted) {
         const days = daysUntil(product.date);
-
         const card = document.createElement("article");
         card.className = "product";
 
@@ -632,18 +637,15 @@
         const date = document.createElement("p");
         date.textContent = `${product.date} · ${statusText(days)}`;
 
-        if (days < 0) {
-          date.className = "expired";
-        } else if (days <= 3) {
-          date.className = "soon";
-        }
+        if (days < 0) date.className = "expired";
+        else if (days <= 3) date.className = "soon";
 
         details.append(name, date);
 
         if (product.openedAt) {
           const opened = document.createElement("p");
           opened.className = "opened-date";
-          opened.textContent = `Avattu ${formatDate(product.openedAt)}`;
+          opened.textContent = openedText(product.openedAt);
           details.append(opened);
         }
 
@@ -652,14 +654,10 @@
 
         const openButton = document.createElement("button");
         openButton.type = "button";
-        openButton.className = product.openedAt
-          ? "secondary-button"
-          : "";
-
+        openButton.className = product.openedAt ? "secondary-button" : "";
         openButton.textContent = product.openedAt
           ? "Peru avaus"
           : "Merkitse avatuksi";
-
         openButton.setAttribute(
           "aria-label",
           product.openedAt
@@ -688,11 +686,7 @@
         deleteButton.className = "delete";
         deleteButton.type = "button";
         deleteButton.textContent = "Poista";
-
-        deleteButton.setAttribute(
-          "aria-label",
-          `Poista ${product.name}`
-        );
+        deleteButton.setAttribute("aria-label", `Poista ${product.name}`);
 
         deleteButton.addEventListener("click", () => {
           const updated = products.filter(item => item.id !== product.id);
@@ -706,7 +700,6 @@
 
         actions.append(openButton, deleteButton);
         details.append(actions);
-
         card.append(createProductImage(product), details);
 
         if (product.openedAt) {
@@ -731,6 +724,29 @@
       renderNotifications();
     }
 
+    addExamplesButton.addEventListener("click", () => {
+      const existingIds = new Set(products.map(product => product.id));
+      const missingExamples = exampleProducts().filter(
+        product => !existingIds.has(product.id)
+      );
+
+      if (missingExamples.length === 0) {
+        alert("Kaikki viisi esimerkkituotetta on jo lisätty.");
+        return;
+      }
+
+      try {
+        saveProducts([...products, ...missingExamples]);
+        showView("products");
+      } catch (error) {
+        alert(
+          `Esimerkkituotteita ei voitu tallentaa: ${
+            error?.message || "tuntematon virhe"
+          }`
+        );
+      }
+    });
+
     form.addEventListener("submit", async event => {
       event.preventDefault();
 
@@ -746,7 +762,6 @@
         };
 
         saveProducts([...products, product]);
-
         form.reset();
         showView("products");
       } catch (error) {

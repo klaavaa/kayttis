@@ -78,6 +78,23 @@
       display: flex;
       gap: 14px;
       align-items: flex-start;
+      border-left: 6px solid transparent;
+    }
+
+    /* Tuotekortin tilavärit */
+    .product.expired-product {
+      background: #fff0f0;
+      border-left-color: #d93636;
+    }
+
+    .product.soon-product {
+      background: #fff2e5;
+      border-left-color: #ee8500;
+    }
+
+    .product.opened-product {
+      background: #fffbe0;
+      border-left-color: #e0b400;
     }
 
     .product img, .placeholder {
@@ -100,7 +117,7 @@
     .details p { margin: 5px 0 0; color: #52635e; }
     .expired { color: #a62929 !important; font-weight: 700; }
     .soon { color: #9b6300 !important; font-weight: 700; }
-    .opened { color: #187a58 !important; font-weight: 700; }
+    .opened { color: #665300 !important; font-weight: 700; }
 
     .product-actions {
       display: flex;
@@ -494,8 +511,18 @@
       }
 
       for (const product of sorted) {
+        const days = daysUntil(product.date);
         const card = document.createElement("article");
         card.className = "product";
+
+        // Päiväysväri on tärkeämpi kuin avatun tuotteen keltainen väri.
+        if (days < 0) {
+          card.classList.add("expired-product");
+        } else if (days <= 3) {
+          card.classList.add("soon-product");
+        } else if (product.openedAt) {
+          card.classList.add("opened-product");
+        }
 
         const details = document.createElement("div");
         details.className = "details";
@@ -504,7 +531,6 @@
         name.textContent = product.name;
 
         const date = document.createElement("p");
-        const days = daysUntil(product.date);
         date.textContent = `${product.date} · ${statusText(days)}`;
 
         if (days < 0) date.className = "expired";
@@ -588,7 +614,6 @@
         const file = document.querySelector("#photo").files[0];
 
         const product = {
-          // Toimii myös lähiverkon tavallisella HTTP-osoitteella.
           id: `tuote-${Date.now()}-${Math.random().toString(36).slice(2)}`,
           name: document.querySelector("#name").value.trim(),
           date: document.querySelector("#date").value,

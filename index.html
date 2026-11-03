@@ -78,23 +78,18 @@
       display: flex;
       gap: 14px;
       align-items: flex-start;
-      border-left: 6px solid transparent;
+      border-left: 7px solid transparent;
     }
 
-    /* Tuotekortin tilavärit */
+    /* Selkeämmät päiväysvärit */
     .product.expired-product {
-      background: #fff0f0;
-      border-left-color: #d93636;
+      background: #ffd6d6;
+      border-left-color: #c62828;
     }
 
     .product.soon-product {
-      background: #fff2e5;
-      border-left-color: #ee8500;
-    }
-
-    .product.opened-product {
-      background: #fffbe0;
-      border-left-color: #e0b400;
+      background: #ffe0bd;
+      border-left-color: #df7600;
     }
 
     .product img, .placeholder {
@@ -113,11 +108,31 @@
     }
 
     .details { flex: 1; min-width: 0; }
-    .details strong { overflow-wrap: anywhere; }
+
+    .product-name {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .product-name strong { overflow-wrap: anywhere; }
+
+    .opened-badge {
+      display: inline-block;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #dcebe5;
+      color: #185c46;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
     .details p { margin: 5px 0 0; color: #52635e; }
-    .expired { color: #a62929 !important; font-weight: 700; }
-    .soon { color: #9b6300 !important; font-weight: 700; }
-    .opened { color: #665300 !important; font-weight: 700; }
+    .expired { color: #981e1e !important; font-weight: 700; }
+    .soon { color: #8a4c00 !important; font-weight: 700; }
+    .opened-date { color: #35564a !important; }
 
     .product-actions {
       display: flex;
@@ -372,7 +387,7 @@
       return `Päiväykseen on ${days} päivää.`;
     }
 
-    // Puhelimen kamerakuva tai galleriakuva pienennetään ennen tallennusta.
+    // Pienennetään kamerasta tai galleriasta valittu kuva ennen tallennusta.
     function resizeImage(file) {
       return new Promise((resolve, reject) => {
         const image = new Image();
@@ -515,20 +530,28 @@
         const card = document.createElement("article");
         card.className = "product";
 
-        // Päiväysväri on tärkeämpi kuin avatun tuotteen keltainen väri.
         if (days < 0) {
           card.classList.add("expired-product");
         } else if (days <= 3) {
           card.classList.add("soon-product");
-        } else if (product.openedAt) {
-          card.classList.add("opened-product");
         }
 
         const details = document.createElement("div");
         details.className = "details";
 
+        const nameRow = document.createElement("div");
+        nameRow.className = "product-name";
+
         const name = document.createElement("strong");
         name.textContent = product.name;
+        nameRow.append(name);
+
+        if (product.openedAt) {
+          const badge = document.createElement("span");
+          badge.className = "opened-badge";
+          badge.textContent = "📦 Avattu";
+          nameRow.append(badge);
+        }
 
         const date = document.createElement("p");
         date.textContent = `${product.date} · ${statusText(days)}`;
@@ -536,12 +559,12 @@
         if (days < 0) date.className = "expired";
         else if (days <= 3) date.className = "soon";
 
-        details.append(name, date);
+        details.append(nameRow, date);
 
         if (product.openedAt) {
           const opened = document.createElement("p");
-          opened.className = "opened";
-          opened.textContent = `✓ Avattu ${formatDate(product.openedAt)}`;
+          opened.className = "opened-date";
+          opened.textContent = `Avattu ${formatDate(product.openedAt)}`;
           details.append(opened);
         }
 
